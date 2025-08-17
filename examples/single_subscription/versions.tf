@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 1.2"
+  required_version = ">= 1.6.0"
 
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.7.0, < 4.0"
+      version = ">= 4.0.0"
     }
     modtm = {
       source  = "Azure/modtm"
@@ -15,6 +15,8 @@ terraform {
 
 provider "azurerm" {
   features {}
+  # use the example variable when provided to target a specific subscription
+  subscription_id = var.subscription_id != "" ? var.subscription_id : null
 }
 
 provider "modtm" {

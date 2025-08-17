@@ -22,13 +22,13 @@ locals {
 
 # Enabling extension - Log Analytics for arc
 data "azurerm_policy_definition" "la_policies" {
-  for_each = local.sql_server_virtual_machines_enabled ? local.log_analytics_policies : {}
+  for_each = local.sql_server_virtual_machines_enabled && var.create_policy_assignments && var.enableAscForSql == "DeployIfNotExists" ? local.log_analytics_policies : {}
 
   display_name = each.value.definition_display_name
 }
 
 resource "azurerm_subscription_policy_assignment" "sql" {
-  for_each = local.sql_server_virtual_machines_enabled ? local.log_analytics_policies : {}
+  for_each = local.sql_server_virtual_machines_enabled && var.create_policy_assignments && var.enableAscForSql == "DeployIfNotExists" ? local.log_analytics_policies : {}
 
   name                 = each.key
   policy_definition_id = data.azurerm_policy_definition.la_policies[each.key].id
@@ -41,20 +41,20 @@ resource "azurerm_subscription_policy_assignment" "sql" {
   }
 
   depends_on = [
-    azurerm_security_center_subscription_pricing.asc_plans["SqlServerVirtualMachines"]
+  azurerm_security_center_subscription_pricing.asc_plans["SqlServerVirtualMachines"]
   ]
 }
 
 # Enabling Log Analytics Roles
 data "azurerm_role_definition" "la_roles" {
-  for_each = local.sql_server_virtual_machines_enabled ? local.log_analytics_roles : {}
+  for_each = local.sql_server_virtual_machines_enabled && var.create_policy_assignments && var.enableAscForSql == "DeployIfNotExists" ? local.log_analytics_roles : {}
 
   name  = each.value.name
   scope = data.azurerm_subscription.current.id
 }
 
 resource "azurerm_role_assignment" "va_auto_provisioning_la_role" {
-  for_each = local.sql_server_virtual_machines_enabled ? local.log_analytics_roles : {}
+  for_each = local.sql_server_virtual_machines_enabled && var.create_policy_assignments && var.enableAscForSql == "DeployIfNotExists" ? local.log_analytics_roles : {}
 
   principal_id       = azurerm_subscription_policy_assignment.sql[each.value.policy].identity[0].principal_id
   scope              = data.azurerm_subscription.current.id

@@ -11,15 +11,19 @@ locals {
   plans_without_databases = contains(var.mdc_plans_list, "Databases") ? setsubtract(setunion(var.mdc_plans_list, var.mdc_databases_plans), ["Databases"]) : var.mdc_plans_list
 }
 
+# Deterministic map for for_each instead of a set
+locals {
+  enabled_plans_map = { for p in sort(tolist(local.enabled_plans)) : p => p }
+}
+
 data "azurerm_subscription" "current" {}
 
 resource "azurerm_security_center_subscription_pricing" "asc_plans" {
-  for_each = local.plans_without_databases
+  for_each = local.enabled_plans_map
 
   tier          = var.default_tier
   resource_type = each.value
-  # Apply subplan only For "StorageAccounts". For other plans, subplan is null.
-  subplan = lookup(var.subplans, each.key, each.key == "StorageAccounts" ? "DefenderForStorageV2" : var.default_subplan)
+  subplan       = lookup(var.subplans, each.key, each.key == "StorageAccounts" ? "DefenderForStorageV2" : var.default_subplan)
 
   dynamic "extension" {
     for_each = try(contains(local.plan_extenstions["AgentlessVmScanning"], each.key), false) ? [1] : []
@@ -76,4 +80,13 @@ resource "azurerm_security_center_subscription_pricing" "asc_plans" {
       name = "EntraPermissionsManagement"
     }
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# Merge whichever resource map exists into a single map for module-wide referencing
+locals {
+  asc_plans = { for k, v in azurerm_security_center_subscription_pricing.asc_plans : k => v }
 }

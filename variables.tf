@@ -54,10 +54,19 @@ variable "mdc_plans_list" {
     "CosmosDbs",
     "StorageAccounts",
     "VirtualMachines",
-    "Api",
   ]
   description = "(Optional) Set of all MDC plans"
   nullable    = false
+
+  validation {
+    condition     = !contains(var.mdc_plans_list, "Api")
+    error_message = "The 'Api' plan is deprecated and not supported by this module. Remove it from mdc_plans_list."
+  }
+}
+
+locals {
+  disallowed_plans = toset(["Api"]) # deprecated by Microsoft
+  enabled_plans    = setsubtract(local.plans_without_databases, local.disallowed_plans)
 }
 
 variable "storage_accounts_malware_scan_cap_gb_per_month" {
@@ -87,4 +96,115 @@ variable "tracing_tags_prefix" {
   default     = "avm_"
   description = "Default prefix for generated tracing tags"
   nullable    = false
+}
+
+variable "create_policy_assignments" {
+  type        = bool
+  default     = true
+  description = "Toggle to create policy assignment resources and their role assignments."
+}
+
+
+
+# Export / integration options
+variable "ascExportResourceGroupLocation" {
+  type        = string
+  default     = "westeurope"
+  description = "Location to create the export resource group"
+}
+
+variable "ascExportResourceGroupName" {
+  type        = string
+  default     = "rg-mdc-export"
+  description = "Name for the export resource group"
+}
+
+variable "createResourceGroup" {
+  type        = bool
+  default     = true
+  description = "If true, the module will create the export resource group specified by `ascExportResourceGroupName`"
+}
+
+# Notifications / contacts
+variable "emailSecurityContact" {
+  type        = string
+  default     = ""
+  description = "Email address for a security contact to use for notifications"
+}
+
+variable "minimalSeverity" {
+  type        = string
+  default     = "High"
+  description = "Minimal severity level for notifications (Low|Medium|High|Critical)"
+}
+
+# Per-plan policy mode toggles. Use "DeployIfNotExists" to create assignments.
+variable "enableAscForServers" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForServersVulnerabilityAssessments" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "vulnerabilityAssessmentProvider" {
+  type    = string
+  default = "mdeTvm"
+}
+
+variable "enableTvmCheck" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForAppServices" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForSql" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForOssDb" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForCosmosDbs" {
+  type    = string
+  default = "Disabled"
+}
+
+variable "enableAscForStorage" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForContainers" {
+  type    = string
+  default = "Disabled"
+}
+
+variable "enableAscForArm" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForCspm" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForSqlOnVm" {
+  type    = string
+  default = "Disabled"
+}
+
+variable "enableAscForKeyVault" {
+  type    = string
+  default = "DeployIfNotExists"
 }
