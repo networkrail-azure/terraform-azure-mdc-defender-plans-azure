@@ -1,0 +1,217 @@
+# terraform-azure-mdc-defender-plans-azure
+
+-> **NOTE:** When running the module, your subscription should not already be onboarded to MDC. If you have already completed the onboarding process, please refer to the [Onboarded Azure Subscription](#onboarded-azure-subscription) section.
+
+~> **NOTE:** Deletion of the pricing resource will reset the pricing tier to `Free`. This module enables prevent-destroy by default; see variable `prevent_destroy`.
+
+## Notice on breaking changes
+
+Please be aware that major version(e.g., from 1.0.0 to 2.0.0) update contains breaking changes that may impact your infrastructure. It is crucial to review these changes with caution before proceeding with the upgrade.
+
+In most cases, you will need to adjust your Terraform code to accommodate the changes introduced in the new major version. We strongly recommend reviewing the changelog and migration guide to understand the modifications and ensure a smooth transition.
+
+To help you in this process, we have provided detailed documentation on the breaking changes, new features, and any deprecated functionalities. Please take the time to read through these resources to avoid any potential issues or disruptions to your infrastructure.
+
+* [Notice on Upgrade to v2.x](./NoticeOnUpgradeTov2.0.md)
+
+Remember, upgrading to a major version with breaking changes should be done carefully and thoroughly tested in your environment. If you have any questions or concerns, please don't hesitate to reach out to our support team for assistance.
+
+
+## Onboarding to Microsoft Defender for Cloud (MDC) plans in Azure
+
+This Terraform module activate Microsoft Defender for Cloud (MDC) plans.
+
+The module supports the following onboarding types:
+
+1. <u>Single Subscription</u>: Onboard MDC plans for a single subscription.
+2. <u>Chosen Subscriptions</u>: Onboard MDC plans for a selected list of subscriptions.
+3. <u>All Subscriptions</u>: Onboard MDC plans for all subscriptions where your account holds owner permissions.
+4. <u>Management Group</u>: Onboard MDC plans for all subscriptions within a designated management group.
+
+### Terraform and terraform-provider-azurerm version restrictions
+
+Terraform core version: >= 1.6.0
+
+Provider azurerm version: >= 4.0.0
+
+The legacy `Api` plan has been removed (deprecated by Microsoft) and will be rejected if provided.
+
+## Usage
+
+### Enable plans
+
+To enable plans using this module, follow these steps based on the subscription type:
+
+#### Single Subscription
+
+1. Navigate to `examples\single_subscription` folder.
+2. Execute the `terraform apply` command.
+3. Your onboarding will be applied exclusively to the subscription you are currently connected to.
+
+#### Chosen Subscriptions / All Subscriptions / Management Group
+
+1. Enter the relevant folder under `examples` based on your scenario.
+2. Execute the `terraform apply` command.
+3. After the execution, a new directory named `output` will be generated within the example folder.
+4. Access the newly created `output` folder.
+5. Modify the `main.tf` file within this folder to align with your specific requirements.
+6. Execute the `terraform apply` command again to apply your modifications.
+
+### Disable plans
+
+* To disable all plans execute `terraform destroy` command.
+* To disable a specific plan, remove the plan name from mdc_plans_list var and execute `terraform apply` command.
+
+### Onboarded Azure Subscription
+We recommend managing the entire onboarding process with our module. If you've already onboarded your Azure Subscription to Microsoft Defender for Cloud plans, you have several options:
+
+#### Azure Defender Plans UI Portal
+* **Manual Cleanup**: Manually toggle off the status of all MDC plans.
+
+#### Terraform CLI
+* **Start Fresh**: You can choose to destroy your current Terraform environment and begin anew.
+* **Import Existing Resources**: Utilize [Terraform import](https://developer.hashicorp.com/terraform/cli/import) to seamlessly integrate existing resources into Terraform management.
+* **Manage Multiple Terraform States**: Maintain your current state and create a new one for this module, allowing for efficient resource management.
+
+## Telemetry Collection
+
+This module uses [terraform-provider-modtm](https://registry.terraform.io/providers/Azure/modtm/latest) to collect telemetry data. This provider is designed to assist with tracking the usage of Terraform modules. It creates a custom `modtm_telemetry` resource that gathers and sends telemetry data to a specified endpoint. The aim is to provide visibility into the lifecycle of your Terraform modules - whether they are being created, updated, or deleted. This data can be invaluable in understanding the usage patterns of your modules, identifying popular modules, and recognizing those that are no longer in use.
+
+The ModTM provider is designed with respect for data privacy and control. The only data collected and transmitted are the tags you define in module's `modtm_telemetry` resource, an uuid which represents a module instance's identifier, and the operation the module's caller is executing (Create/Update/Delete/Read). No other data from your Terraform modules or your environment is collected or transmitted.
+
+One of the primary design principles of the ModTM provider is its non-blocking nature. The provider is designed to work in a way that any network disconnectedness or errors during the telemetry data sending process will not cause a Terraform error or interrupt your Terraform operations. This makes the ModTM provider safe to use even in network-restricted or air-gaped environments.
+
+If the telemetry data cannot be sent due to network issues, the failure will be logged, but it will not affect the Terraform operation in progress(it might delay your operations for no more than 5 seconds). This ensures that your Terraform operations always run smoothly and without interruptions, regardless of the network conditions.
+
+You can turn off the telemetry collection by declaring the following `provider` block in your root module:
+
+```hcl
+provider "modtm" {
+  enabled = false
+}
+```
+
+## Behavior changes in this fork
+
+- Api plan removed: The `Api` plan is deprecated and no longer accepted. Validation fails if included.
+- Policy assignment toggle: Use `create_policy_assignments` (default true) to control creation of `azurerm_subscription_policy_assignment` and related role assignments. Set to false if you only want pricing tiers applied without Azure Policy artifacts.
+- Prevent destroy: `prevent_destroy` defaults to true on `azurerm_security_center_subscription_pricing` to safeguard against destructive changes that would revert tiers to Free. Override with caution.
+
+### Portal → module variable mapping (quick)
+
+The Azure Defender portal toggles correspond to MDC "plans"; map them to module inputs as follows:
+
+- "Azure SQL Databases" → plan `SqlServers` — toggle/policy: `enableAscForSql`; pricing via `subplans`.
+- "SQL servers on machines" → plan `SqlServerVirtualMachines` — toggle: `enableAscForSqlOnVm`.
+- "Open-source relational databases" → plan `OpenSourceRelationalDatabases` — toggle: `enableAscForOssDb`.
+- "Azure Cosmos DB" → plan `CosmosDbs` — toggle: `enableAscForCosmosDbs`.
+
+Note: classic MMA auto-provisioning is removed. Use AMA/DCR and the `VirtualMachines` plan. To attach an existing AMA DCR, provide `existing_dcr_id` and `dcr_association_scope_id`.
+
+## Contributing
+### Configurations
+
+- [Configure Terraform for Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/terraform-install-configure)
+
+We assumed that you have setup service principal's credentials in your environment variables like below:
+
+```shell
+export ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
+export ARM_TENANT_ID="<azure_subscription_tenant_id>"
+export ARM_CLIENT_ID="<service_principal_appid>"
+export ARM_CLIENT_SECRET="<service_principal_password>"
+```
+
+On Windows Powershell:
+
+```shell
+$env:ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
+$env:ARM_TENANT_ID="<azure_subscription_tenant_id>"
+$env:ARM_CLIENT_ID="<service_principal_appid>"
+$env:ARM_CLIENT_SECRET="<service_principal_password>"
+```
+
+### Pre-Commit & Pr-Check &  E2E Test
+
+We provide a docker image to run the pre-commit checks and tests for you: `mcr.microsoft.com/azterraform:latest`
+
+To run the pre-commit task, we can run the following command:
+
+```shell
+$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
+```
+
+On Windows Powershell:
+
+```shell
+$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
+```
+
+In pre-commit task, we will:
+
+1. Run `terraform fmt -recursive` command for your Terraform code.
+2. Run `terrafmt fmt -f` command for markdown files and go code files to ensure that the Terraform code embedded in these files are well formatted.
+3. Run `go mod tidy` and `go mod vendor` for test folder to ensure that all the dependencies have been synced.
+4. Run `gofmt` for all go code files.
+5. Run `gofumpt` for all go code files.
+6. Run `terraform-docs` on `README.md` file, then run `markdown-table-formatter` to format markdown tables in `README.md`.
+
+Then we can run the pr-check task to check whether our code meets our pipeline's requirement (We strongly recommend you run the following command before you commit):
+
+```shell
+$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
+```
+
+On Windows Powershell:
+
+```shell
+$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
+```
+
+To run the e2e-test, we can run the following command:
+
+```text
+docker run --rm -v $(pwd):/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
+```
+
+On Windows Powershell:
+
+```text
+docker run --rm -v ${pwd}:/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
+# terraform-azure-mdc-defender-plans-azure (concise)
+
+This Terraform module enables Microsoft Defender for Cloud (MDC) plans at subscription or management-group scope.
+
+Key points
+- Terraform >= 1.6.0, azurerm provider >= 4.x.
+- The deprecated `Api` plan is rejected by validation.
+- Classic MMA auto-provisioning is removed. The module will not create Data Collection Rules (DCRs); provide an existing DCR via `existing_dcr_id` and set `dcr_association_scope_id` to attach it.
+- Policy and RBAC artifacts are created only when `create_policy_assignments = true` and the plan-specific `enableAscFor*` variable equals `"DeployIfNotExists"`.
+
+Quick start
+1. Choose an example (e.g. `examples/single_subscription`).
+2. Set variables (see Variables below) and run:
+
+```bash
+terraform init
+terraform apply
+```
+
+Essential variables (most used)
+- `mdc_plans_list` — set of MDC plans to enable (e.g. `"VirtualMachines"`, `"Containers"`, `"SqlServers"`).
+- `create_policy_assignments` — `bool` toggle to create Azure Policy and RBAC artifacts (default: `true`).
+- Per-plan policy toggles (string): `enableAscForContainers`, `enableAscForServersVulnerabilityAssessments`, `enableAscForSql`, `enableAscForOssDb`, `enableAscForCosmosDbs`, `enableAscForStorage`, `enableAscForAppServices`, `enableAscForKeyVault`, `enableAscForSqlOnVm`.
+- `existing_dcr_id` and `dcr_association_scope_id` — provide to associate an external AMA/DCR to a scope; module will not create DCRs.
+
+Examples
+- See `examples/` for single-subscription, chosen-subscriptions, all-subscriptions, and management-group usage.
+
+Behavior notes
+- This fork: removed `Api` plan and MMA provisioning. Policy/RBAC creation is gated by `create_policy_assignments` and per-plan `enableAscFor*` settings.
+- Pricing tiers are configured via `default_tier` and `subplans`.
+
+Contributing & tests
+- See `NoticeOnUpgradeTov2.0.md` for breaking changes. Use the provided Docker image `mcr.microsoft.com/azterraform:latest` to run pre-commit and tests if needed.
+
+For full details, examples, variables and changelog, check the repository files (`variables.tf`, `main.tf`, examples/, CHANGELOG.md).
+

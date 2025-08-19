@@ -80,10 +80,6 @@ resource "azurerm_security_center_subscription_pricing" "asc_plans" {
       name = "EntraPermissionsManagement"
     }
   }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 # Merge whichever resource map exists into a single map for module-wide referencing

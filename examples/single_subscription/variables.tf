@@ -39,11 +39,6 @@ variable "create_policy_assignments" {
 
 
 # Export / integration options used in example
-variable "logAnalytics" {
-  type    = string
-  default = ""
-}
-
 variable "ascExportResourceGroupLocation" {
   type    = string
   default = "westeurope"
@@ -145,5 +140,15 @@ variable "subscription_id" {
   type    = string
   default = ""
   description = "(Optional) Subscription id to target for this example. If empty, provider will use the currently authenticated subscription."
+}
+
+# ------------------------------
+# Optional AMA DCR example inputs
+# ------------------------------
+// The module no longer creates DCRs. Provide an existing DCR to create an association.
+variable "existing_dcr_id" {
+  type        = string
+  default     = null
+  description = "(Optional) Resource id of an existing Data Collection Rule to associate."
 }
 

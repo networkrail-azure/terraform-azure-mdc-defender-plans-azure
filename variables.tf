@@ -208,3 +208,28 @@ variable "enableAscForKeyVault" {
   type    = string
   default = "DeployIfNotExists"
 }
+
+// Legacy MMA opt-in removed: module no longer creates or depends on classic Log Analytics (MMA) agent policies.
+// The MMA workflow is retired; use AMA/DCR and the `VirtualMachines` plan instead.
+
+# ------------------------------
+# Optional AMA Data Collection Rule (DCR) wiring (opt-in)
+# ------------------------------
+// This module no longer creates Data Collection Rules (DCRs). Provide an existing DCR
+// via `existing_dcr_id` and the module will create the association to attach that DCR
+// to the desired scope.
+
+// Resource id of an existing Data Collection Rule. When set, the module will create
+// an `azurerm_monitor_data_collection_rule_association` to attach this DCR to the
+// provided `dcr_association_scope_id`.
+variable "existing_dcr_id" {
+  type        = string
+  default     = null
+  description = "Resource id of an existing Data Collection Rule (DCR)."
+}
+
+variable "dcr_association_scope_id" {
+  type        = string
+  default     = null
+  description = "Resource ID to associate the DCR to (subscription, resource group, VM/VMSS, etc.)."
+}

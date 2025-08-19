@@ -5,27 +5,6 @@ createResourceGroup            = true
 emailSecurityContact = "secops@example.com"
 minimalSeverity      = "High"
 
-# enableAscForServers                         = "DeployIfNotExists"
-# enableAscForServersVulnerabilityAssessments = "DeployIfNotExists"
-# vulnerabilityAssessmentProvider             = "mdeTvm"
-# enableTvmCheck                              = "DeployIfNotExists"
-
-# enableAscForAppServices = "DeployIfNotExists"
-
-# enableAscForSql       = "DeployIfNotExists"
-# enableAscForOssDb     = "DeployIfNotExists"
-# enableAscForCosmosDbs = "Disabled"
-
-# enableAscForStorage    = "DeployIfNotExists"
-# enableAscForContainers = "Disabled"
-
-# enableAscForArm  = "DeployIfNotExists"
-# enableAscForCspm = "DeployIfNotExists"
-
-# enableAscForSqlOnVm = "Disabled"
-
-# enableAscForKeyVault = "DeployIfNotExists"
-
 mdc_plans_list = [
   "AppServices",
   "Arm",
@@ -51,3 +30,11 @@ create_policy_assignments = true
 
 
 subscription_id = "0e02fdda-075c-4944-b128-d918a1219489"
+
+# Optional: provide an existing Data Collection Rule (DCR) resource id to associate.
+# When set, the module will create an azurerm_monitor_data_collection_rule_association
+# to attach the DCR to the `dcr_association_scope_id` (derived from subscription_id
+# or the current authenticated subscription).
+# Example format:
+# "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Insights/dataCollectionRules/<dcr-name>"
+existing_dcr_id = ""

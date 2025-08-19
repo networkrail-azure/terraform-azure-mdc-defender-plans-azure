@@ -1,3 +1,4 @@
+# Container policies/roles map drives consistent keys across data lookups, policy assignments, and role bindings
 locals {
   container_policies = {
     mdc-containers-kubernetes1-autoprovisioning-containers = {
@@ -26,6 +27,8 @@ locals {
       name   = "Azure Kubernetes Service Policy Add-on Deployment"
       policy = "mdc-cmdc-containers-kubernetes2-autoprovisioning-containers"
     }
+    # The following are Azure built-in role display names used for RBAC bindings.
+    # They do not indicate automatic installation of the legacy MMA agent.
     containers-aks-role-1 = {
       name   = "Log Analytics Contributor"
       policy = "mdc-containers_aks_autoprovisioning-containers"
@@ -45,7 +48,7 @@ locals {
   }
 }
 
-# Enabling Containers Extensions - Azure Policy for Kubernetes + Defender DaemonSet
+# Containers policy definitions (created only when enabled)
 data "azurerm_policy_definition" "container_policies" {
   for_each = contains(var.mdc_plans_list, "Containers") && var.create_policy_assignments && var.enableAscForContainers == "DeployIfNotExists" ? local.container_policies : {}
 
@@ -61,16 +64,13 @@ resource "azurerm_subscription_policy_assignment" "container" {
   display_name         = each.value.definition_display_name
   location             = var.location
 
-  identity {
-    type = "SystemAssigned"
-  }
+  identity { type = "SystemAssigned" }
 
   depends_on = [
-  azurerm_security_center_subscription_pricing.asc_plans["Containers"]
+    azurerm_security_center_subscription_pricing.asc_plans["Containers"]
   ]
 }
 
-# Enabling Containers Roles
 data "azurerm_role_definition" "container_roles" {
   for_each = contains(var.mdc_plans_list, "Containers") && var.create_policy_assignments && var.enableAscForContainers == "DeployIfNotExists" ? local.container_roles : {}
 
