@@ -12,3 +12,4 @@ output "subscription_pricing_id" {
   description = "The subscription pricing ID"
   value       = { for plan, pricing in local.asc_plans : plan => pricing.id }
 }
+
