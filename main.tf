@@ -16,7 +16,9 @@ locals {
   enabled_plans_map = { for p in sort(tolist(local.enabled_plans)) : p => p }
 }
 
-data "azurerm_subscription" "current" {}
+data "azurerm_subscription" "current" {
+  subscription_id = var.subscription_id
+}
 
 resource "azurerm_security_center_subscription_pricing" "asc_plans" {
   for_each = local.enabled_plans_map

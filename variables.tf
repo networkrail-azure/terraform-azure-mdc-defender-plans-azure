@@ -233,3 +233,9 @@ variable "dcr_association_scope_id" {
   default     = null
   description = "Resource ID to associate the DCR to (subscription, resource group, VM/VMSS, etc.)."
 }
+
+variable "subscription_id" {
+  type        = string
+  default     = null
+  description = "(Optional) Subscription ID to target for MDC plan configuration. If null, uses the current subscription context."
+}
