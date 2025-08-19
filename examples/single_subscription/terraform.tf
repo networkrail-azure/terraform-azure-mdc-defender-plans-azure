@@ -15,8 +15,7 @@ terraform {
 
 provider "azurerm" {
   features {}
-  # use the example variable when provided to target a specific subscription
-  subscription_id = var.subscription_id != "" ? var.subscription_id : null
+  subscription_id = var.subscription_id
 }
 
 provider "modtm" {

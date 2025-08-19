@@ -137,9 +137,8 @@ variable "enableAscForKeyVault" {
 }
 
 variable "subscription_id" {
-  type    = string
-  default = ""
-  description = "(Optional) Subscription id to target for this example. If empty, provider will use the currently authenticated subscription."
+  type        = string
+  description = "Subscription ID to target for this example."
 }
 
 # ------------------------------

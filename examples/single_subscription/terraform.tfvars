@@ -29,7 +29,7 @@ create_policy_assignments = true
 
 
 
-subscription_id = "0e02fdda-075c-4944-b128-d918a1219489"
+subscription_id = "aeae01d6-b328-4a0f-a317-d98e4af21290"
 
 # Optional: provide an existing Data Collection Rule (DCR) resource id to associate.
 # When set, the module will create an azurerm_monitor_data_collection_rule_association
