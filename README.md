@@ -1,21 +1,5 @@
 # terraform-azure-mdc-defender-plans-azure
 
--> **NOTE:** When running the module, your subscription should not already be onboarded to MDC. If you have already completed the onboarding process, please refer to the [Onboarded Azure Subscription](#onboarded-azure-subscription) section.
-
-~> **NOTE:** Deletion of the pricing resource will reset the pricing tier to `Free`. This module enables prevent-destroy by default; see variable `prevent_destroy`.
-
-## Notice on breaking changes
-
-Please be aware that major version(e.g., from 1.0.0 to 2.0.0) update contains breaking changes that may impact your infrastructure. It is crucial to review these changes with caution before proceeding with the upgrade.
-
-In most cases, you will need to adjust your Terraform code to accommodate the changes introduced in the new major version. We strongly recommend reviewing the changelog and migration guide to understand the modifications and ensure a smooth transition.
-
-To help you in this process, we have provided detailed documentation on the breaking changes, new features, and any deprecated functionalities. Please take the time to read through these resources to avoid any potential issues or disruptions to your infrastructure.
-
-* [Notice on Upgrade to v2.x](./NoticeOnUpgradeTov2.0.md)
-
-Remember, upgrading to a major version with breaking changes should be done carefully and thoroughly tested in your environment. If you have any questions or concerns, please don't hesitate to reach out to our support team for assistance.
-
 
 ## Onboarding to Microsoft Defender for Cloud (MDC) plans in Azure
 
@@ -24,17 +8,8 @@ This Terraform module activate Microsoft Defender for Cloud (MDC) plans.
 The module supports the following onboarding types:
 
 1. <u>Single Subscription</u>: Onboard MDC plans for a single subscription.
-2. <u>Chosen Subscriptions</u>: Onboard MDC plans for a selected list of subscriptions.
-3. <u>All Subscriptions</u>: Onboard MDC plans for all subscriptions where your account holds owner permissions.
-4. <u>Management Group</u>: Onboard MDC plans for all subscriptions within a designated management group.
 
-### Terraform and terraform-provider-azurerm version restrictions
 
-Terraform core version: >= 1.6.0
-
-Provider azurerm version: >= 4.0.0
-
-The legacy `Api` plan has been removed (deprecated by Microsoft) and will be rejected if provided.
 
 ## Usage
 
@@ -91,127 +66,55 @@ provider "modtm" {
 }
 ```
 
-## Behavior changes in this fork
 
-- Api plan removed: The `Api` plan is deprecated and no longer accepted. Validation fails if included.
-- Policy assignment toggle: Use `create_policy_assignments` (default true) to control creation of `azurerm_subscription_policy_assignment` and related role assignments. Set to false if you only want pricing tiers applied without Azure Policy artifacts.
-- Prevent destroy: `prevent_destroy` defaults to true on `azurerm_security_center_subscription_pricing` to safeguard against destructive changes that would revert tiers to Free. Override with caution.
+Purpose
+This module enables Microsoft Defender for Cloud (MDC) plans at subscription or management-group scope.
 
-### Portal → module variable mapping (quick)
-
-The Azure Defender portal toggles correspond to MDC "plans"; map them to module inputs as follows:
-
-- "Azure SQL Databases" → plan `SqlServers` — toggle/policy: `enableAscForSql`; pricing via `subplans`.
-- "SQL servers on machines" → plan `SqlServerVirtualMachines` — toggle: `enableAscForSqlOnVm`.
-- "Open-source relational databases" → plan `OpenSourceRelationalDatabases` — toggle: `enableAscForOssDb`.
-- "Azure Cosmos DB" → plan `CosmosDbs` — toggle: `enableAscForCosmosDbs`.
-
-Note: classic MMA auto-provisioning is removed. Use AMA/DCR and the `VirtualMachines` plan. To attach an existing AMA DCR, provide `existing_dcr_id` and `dcr_association_scope_id`.
-
-## Contributing
-### Configurations
-
-- [Configure Terraform for Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/terraform-install-configure)
-
-We assumed that you have setup service principal's credentials in your environment variables like below:
-
-```shell
-export ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
-export ARM_TENANT_ID="<azure_subscription_tenant_id>"
-export ARM_CLIENT_ID="<service_principal_appid>"
-export ARM_CLIENT_SECRET="<service_principal_password>"
-```
-
-On Windows Powershell:
-
-```shell
-$env:ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
-$env:ARM_TENANT_ID="<azure_subscription_tenant_id>"
-$env:ARM_CLIENT_ID="<service_principal_appid>"
-$env:ARM_CLIENT_SECRET="<service_principal_password>"
-```
-
-### Pre-Commit & Pr-Check &  E2E Test
-
-We provide a docker image to run the pre-commit checks and tests for you: `mcr.microsoft.com/azterraform:latest`
-
-To run the pre-commit task, we can run the following command:
-
-```shell
-$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
-```
-
-On Windows Powershell:
-
-```shell
-$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
-```
-
-In pre-commit task, we will:
-
-1. Run `terraform fmt -recursive` command for your Terraform code.
-2. Run `terrafmt fmt -f` command for markdown files and go code files to ensure that the Terraform code embedded in these files are well formatted.
-3. Run `go mod tidy` and `go mod vendor` for test folder to ensure that all the dependencies have been synced.
-4. Run `gofmt` for all go code files.
-5. Run `gofumpt` for all go code files.
-6. Run `terraform-docs` on `README.md` file, then run `markdown-table-formatter` to format markdown tables in `README.md`.
-
-Then we can run the pr-check task to check whether our code meets our pipeline's requirement (We strongly recommend you run the following command before you commit):
-
-```shell
-$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
-```
-
-On Windows Powershell:
-
-```shell
-$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
-```
-
-To run the e2e-test, we can run the following command:
-
-```text
-docker run --rm -v $(pwd):/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
-```
-
-On Windows Powershell:
-
-```text
-docker run --rm -v ${pwd}:/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
-# terraform-azure-mdc-defender-plans-azure (concise)
-
-This Terraform module enables Microsoft Defender for Cloud (MDC) plans at subscription or management-group scope.
-
-Key points
-- Terraform >= 1.6.0, azurerm provider >= 4.x.
-- The deprecated `Api` plan is rejected by validation.
-- Classic MMA auto-provisioning is removed. The module will not create Data Collection Rules (DCRs); provide an existing DCR via `existing_dcr_id` and set `dcr_association_scope_id` to attach it.
-- Policy and RBAC artifacts are created only when `create_policy_assignments = true` and the plan-specific `enableAscFor*` variable equals `"DeployIfNotExists"`.
+Requirements
+- Terraform >= 1.6.0
+- Provider: azurerm >= 4.x
 
 Quick start
-1. Choose an example (e.g. `examples/single_subscription`).
-2. Set variables (see Variables below) and run:
+1. Edit variables as needed (see `examples/` and `variables.tf`).
+2. From an example folder:
 
 ```bash
 terraform init
 terraform apply
 ```
 
-Essential variables (most used)
-- `mdc_plans_list` — set of MDC plans to enable (e.g. `"VirtualMachines"`, `"Containers"`, `"SqlServers"`).
-- `create_policy_assignments` — `bool` toggle to create Azure Policy and RBAC artifacts (default: `true`).
-- Per-plan policy toggles (string): `enableAscForContainers`, `enableAscForServersVulnerabilityAssessments`, `enableAscForSql`, `enableAscForOssDb`, `enableAscForCosmosDbs`, `enableAscForStorage`, `enableAscForAppServices`, `enableAscForKeyVault`, `enableAscForSqlOnVm`.
-- `existing_dcr_id` and `dcr_association_scope_id` — provide to associate an external AMA/DCR to a scope; module will not create DCRs.
-
-Examples
-- See `examples/` for single-subscription, chosen-subscriptions, all-subscriptions, and management-group usage.
+Key variables
+- `mdc_plans_list` — set of plans to enable (e.g. `"VirtualMachines"`, `"Containers"`).
+- `create_policy_assignments` — if `true`, module creates policy and RBAC artifacts (default: `true`).
+- Per-plan toggles `enableAscFor*` — set to `"DeployIfNotExists"` to allow the module to create policy assignments for that plan.
+- `existing_dcr_id` + `dcr_association_scope_id` — associate an existing AMA/DCR; module will not create DCRs.
 
 Behavior notes
-- This fork: removed `Api` plan and MMA provisioning. Policy/RBAC creation is gated by `create_policy_assignments` and per-plan `enableAscFor*` settings.
-- Pricing tiers are configured via `default_tier` and `subplans`.
+- The deprecated `Api` plan is rejected by input validation.
+- Classic MMA auto-provisioning is removed. Use AMA/DCR for data collection; provide existing DCRs for association.
 
-Contributing & tests
-- See `NoticeOnUpgradeTov2.0.md` for breaking changes. Use the provided Docker image `mcr.microsoft.com/azterraform:latest` to run pre-commit and tests if needed.
+Where to look next
+- Examples: `examples/`
+- Inputs: `variables.tf`
+- Pricing and plan wiring: `main.tf`
+- Changelog: `CHANGELOG.md`
 
-For full details, examples, variables and changelog, check the repository files (`variables.tf`, `main.tf`, examples/, CHANGELOG.md).
+Contributing
+See `NoticeOnUpgradeTov2.0.md` for migration notes. Use `mcr.microsoft.com/azterraform:latest` for local checks if needed.
 
+
+## Inputs
+
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.0.0 |
+| <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) | ~> 0.3 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
