@@ -84,6 +84,7 @@ terraform apply
 ```
 
 Key variables
+- `subscription_id` — target a specific subscription ID; if null, uses current subscription context (default: `null`).
 - `mdc_plans_list` — set of plans to enable (e.g. `"VirtualMachines"`, `"Containers"`).
 - `create_policy_assignments` — if `true`, module creates policy and RBAC artifacts (default: `true`).
 - Per-plan toggles `enableAscFor*` — set to `"DeployIfNotExists"` to allow the module to create policy assignments for that plan.

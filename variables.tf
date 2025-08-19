@@ -104,7 +104,11 @@ variable "create_policy_assignments" {
   description = "Toggle to create policy assignment resources and their role assignments."
 }
 
-
+variable "subscription_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The subscription ID to target. If null, uses the current subscription context."
+}
 
 # Export / integration options
 variable "ascExportResourceGroupLocation" {
