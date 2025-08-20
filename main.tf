@@ -10,8 +10,6 @@ locals {
   }
   plans_without_databases = contains(var.mdc_plans_list, "Databases") ? setsubtract(setunion(var.mdc_plans_list, var.mdc_databases_plans), ["Databases"]) : var.mdc_plans_list
 }
-
-# Deterministic map for for_each instead of a set
 locals {
   enabled_plans_map = { for p in sort(tolist(local.enabled_plans)) : p => p }
 }

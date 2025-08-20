@@ -28,7 +28,6 @@ locals {
       policy = "mdc-cmdc-containers-kubernetes2-autoprovisioning-containers"
     }
     # The following are Azure built-in role display names used for RBAC bindings.
-    # They do not indicate automatic installation of the legacy MMA agent.
     containers-aks-role-1 = {
       name   = "Log Analytics Contributor"
       policy = "mdc-containers_aks_autoprovisioning-containers"
