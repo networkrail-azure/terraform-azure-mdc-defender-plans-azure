@@ -66,7 +66,7 @@ resource "azurerm_subscription_policy_assignment" "container" {
   identity { type = "SystemAssigned" }
 
   depends_on = [
-    azurerm_security_center_subscription_pricing.asc_plans["Containers"]
+    azapi_resource.asc_plans["Containers"]
   ]
 }
 

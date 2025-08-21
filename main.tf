@@ -18,71 +18,80 @@ data "azurerm_subscription" "current" {
   subscription_id = var.subscription_id
 }
 
-resource "azurerm_security_center_subscription_pricing" "asc_plans" {
+# Calculate extensions for each plan
+locals {
+  # Build extensions list for each plan
+  plan_extensions = {
+    for plan in keys(local.enabled_plans_map) : plan => concat(
+      # AgentlessVmScanning
+      contains(lookup(local.plan_extenstions, "AgentlessVmScanning", []), plan) ? [{
+        name = "AgentlessVmScanning"
+        isEnabled = "True"
+        additionalExtensionProperties = {
+          ExclusionTags = "[]"
+        }
+      }] : [],
+      # ContainerRegistriesVulnerabilityAssessments
+      contains(lookup(local.plan_extenstions, "ContainerRegistriesVulnerabilityAssessments", []), plan) ? [{
+        name = "ContainerRegistriesVulnerabilityAssessments"
+        isEnabled = "True"
+      }] : [],
+      # AgentlessDiscoveryForKubernetes
+      contains(lookup(local.plan_extenstions, "AgentlessDiscoveryForKubernetes", []), plan) ? [{
+        name = "AgentlessDiscoveryForKubernetes"
+        isEnabled = "True"
+      }] : [],
+      # ContainerSensor
+      contains(lookup(local.plan_extenstions, "ContainerSensor", []), plan) ? [{
+        name = "ContainerSensor"
+        isEnabled = "True"
+      }] : [],
+      # OnUploadMalwareScanning
+      contains(lookup(local.plan_extenstions, "OnUploadMalwareScanning", []), plan) ? [{
+        name = "OnUploadMalwareScanning"
+        isEnabled = "True"
+        additionalExtensionProperties = {
+          CapGBPerMonthPerStorageAccount = var.storage_accounts_malware_scan_cap_gb_per_month
+        }
+      }] : [],
+      # SensitiveDataDiscovery
+      contains(lookup(local.plan_extenstions, "SensitiveDataDiscovery", []), plan) ? [{
+        name = "SensitiveDataDiscovery"
+        isEnabled = "True"
+      }] : [],
+      # EntraPermissionsManagement
+      contains(lookup(local.plan_extenstions, "EntraPermissionsManagement", []), plan) ? [{
+        name = "EntraPermissionsManagement"
+        isEnabled = "True"
+      }] : []
+    )
+  }
+}
+
+resource "azapi_resource" "asc_plans" {
   for_each = local.enabled_plans_map
 
-  tier          = var.default_tier
-  resource_type = each.value
-  subplan       = lookup(var.subplans, each.key, each.key == "StorageAccounts" ? "DefenderForStorageV2" : var.default_subplan)
+  type      = "Microsoft.Security/pricings@2024-01-01"
+  name      = each.value
+  parent_id = "/subscriptions/${var.subscription_id}"
 
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["AgentlessVmScanning"], each.key), false) ? [1] : []
-
-    content {
-      name = "AgentlessVmScanning"
-      additional_extension_properties = {
-        ExclusionTags = "[]"
-      }
+  body = {
+    properties = {
+      pricingTier = var.default_tier
+      subPlan     = lookup(var.subplans, each.key, each.key == "StorageAccounts" ? "DefenderForStorageV2" : var.default_subplan)
+      extensions  = local.plan_extensions[each.key]
     }
   }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["ContainerRegistriesVulnerabilityAssessments"], each.key), false) ? [1] : []
 
-    content {
-      name = "ContainerRegistriesVulnerabilityAssessments"
-    }
-  }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["AgentlessDiscoveryForKubernetes"], each.key), false) ? [1] : []
-
-    content {
-      name = "AgentlessDiscoveryForKubernetes"
-    }
-  }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["ContainerSensor"], each.key), false) ? [1] : []
-
-    content {
-      name = "ContainerSensor"
-    }
-  }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["OnUploadMalwareScanning"], each.key), false) ? [1] : []
-
-    content {
-      name = "OnUploadMalwareScanning"
-      additional_extension_properties = {
-        CapGBPerMonthPerStorageAccount = var.storage_accounts_malware_scan_cap_gb_per_month
-      }
-    }
-  }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["SensitiveDataDiscovery"], each.key), false) ? [1] : []
-
-    content {
-      name = "SensitiveDataDiscovery"
-    }
-  }
-  dynamic "extension" {
-    for_each = try(contains(local.plan_extenstions["EntraPermissionsManagement"], each.key), false) ? [1] : []
-
-    content {
-      name = "EntraPermissionsManagement"
-    }
+  # Handle lifecycle to allow for existing resources
+  lifecycle {
+    ignore_changes = [
+      body
+    ]
   }
 }
 
 # Merge whichever resource map exists into a single map for module-wide referencing
 locals {
-  asc_plans = { for k, v in azurerm_security_center_subscription_pricing.asc_plans : k => v }
+  asc_plans = { for k, v in azapi_resource.asc_plans : k => v }
 }
