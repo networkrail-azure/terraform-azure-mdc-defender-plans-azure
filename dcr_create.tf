@@ -1,13 +1,10 @@
-// Create a Data Collection Rule when telemetry is enabled
-// and the user opts in via `var.create_dcr`. This uses an existing Log Analytics workspace
-// provided via `var.dcr_workspace_resource_id`.
-
 locals {
-  should_create_dcr = var.enable_telemetry && var.create_dcr
+  should_create_dcr = var.enable_telemetry
+  
+  # Auto-generate names using region
+  dcr_name                = "dcr-mdc-${var.location}"
+  dcr_resource_group_name = "rg-mdc-dcr-${var.location}"
 }
-
-# Hardcoded data reference to the team's central Log Analytics workspace.
-# Change these values here if the authoritative workspace changes.
 data "azurerm_log_analytics_workspace" "management" {
   name                = "law-management-uksouth"
   resource_group_name = "rg-management-uksouth"
@@ -15,17 +12,16 @@ data "azurerm_log_analytics_workspace" "management" {
 
 resource "azurerm_resource_group" "dcr" {
   count    = local.should_create_dcr ? 1 : 0
-  name     = var.dcr_resource_group_name
+  name     = local.dcr_resource_group_name
   location = var.location
 }
 
 resource "azurerm_monitor_data_collection_rule" "dcr" {
   count               = local.should_create_dcr ? 1 : 0
-  name                = var.dcr_name
+  name                = local.dcr_name
   resource_group_name = local.should_create_dcr ? azurerm_resource_group.dcr[0].name : null
   location            = var.location
 
-  // Minimal data sources and a log_analytics destination for example purposes.
   data_sources {
     windows_event_log {
       name     = "weblogs"

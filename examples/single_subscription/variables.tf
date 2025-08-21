@@ -140,27 +140,3 @@ variable "subscription_id" {
   type        = string
   description = "Subscription ID to target for this example."
 }
-
-# ------------------------------
-# Optional AMA DCR example inputs
-# ------------------------------
-// The module can create DCRs when create_dcr is true and telemetry is enabled.
-// Alternatively, provide an existing DCR to create an association.
-variable "create_dcr" {
-  type        = bool
-  default     = false
-  description = "When true (and telemetry enabled) the module will create a Log Analytics workspace and a Data Collection Rule and use it for the association."
-}
-
-variable "dcr_name" {
-  type        = string
-  default     = "mdc-example-dcr"
-  description = "Name to give the created Data Collection Rule when create_dcr is true."
-}
-
-variable "dcr_resource_group_name" {
-  type        = string
-  default     = "rg-mdc-example-dcr"
-  description = "Resource group name to create the DCR/workspace in when create_dcr is true."
-}
-

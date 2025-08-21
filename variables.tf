@@ -24,7 +24,7 @@ DESCRIPTION
 
 variable "location" {
   type        = string
-  default     = "West Europe"
+  default     = "uksouth"
   description = "(Optional) The location/region where the policy should exist."
 }
 
@@ -209,24 +209,3 @@ variable "dcr_association_scope_id" {
   default     = null
   description = "Resource ID to associate the DCR to (subscription, resource group, VM/VMSS, etc.)."
 }
-variable "create_dcr" {
-  type        = bool
-  default     = false
-  description = "When true (and telemetry enabled) the module will create a Log Analytics workspace and a Data Collection Rule and use it for the association."
-}
-
-variable "dcr_name" {
-  type        = string
-  default     = "mdc-dcr"
-  description = "Name to give the created Data Collection Rule when `create_dcr` is true."
-}
-
-variable "dcr_resource_group_name" {
-  type        = string
-  default     = "rg-mdc-dcr"
-  description = "Resource group name to create the DCR/workspace in when `create_dcr` is true."
-}
-
-# The module will reference a fixed, management workspace for DCR destinations.
-# Historically this was passed in via `dcr_workspace_resource_id`. To simplify
-# usage we now reference the management workspace directly from within the module.
