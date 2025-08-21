@@ -6,6 +6,13 @@ locals {
   should_create_dcr = var.enable_telemetry && var.create_dcr
 }
 
+# Hardcoded data reference to the team's central Log Analytics workspace.
+# Change these values here if the authoritative workspace changes.
+data "azurerm_log_analytics_workspace" "management" {
+  name                = "law-management-uksouth"
+  resource_group_name = "rg-management-uksouth"
+}
+
 resource "azurerm_resource_group" "dcr" {
   count    = local.should_create_dcr ? 1 : 0
   name     = var.dcr_resource_group_name
@@ -30,7 +37,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr" {
   destinations {
     log_analytics {
       name                  = "la"
-      workspace_resource_id = var.dcr_workspace_resource_id
+      workspace_resource_id = data.azurerm_log_analytics_workspace.management.id
     }
   }
 

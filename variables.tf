@@ -227,8 +227,6 @@ variable "dcr_resource_group_name" {
   description = "Resource group name to create the DCR/workspace in when `create_dcr` is true."
 }
 
-variable "dcr_workspace_resource_id" {
-  type        = string
-  default     = null
-  description = "Resource ID of an existing Log Analytics workspace to use for the DCR. Required when create_dcr is true."
-}
+# The module will reference a fixed, management workspace for DCR destinations.
+# Historically this was passed in via `dcr_workspace_resource_id`. To simplify
+# usage we now reference the management workspace directly from within the module.

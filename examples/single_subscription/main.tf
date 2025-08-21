@@ -18,7 +18,6 @@ module "mdc_plans_enable" {
   
   # Required: provide existing workspace and customize DCR names when create_dcr is true
   dcr_name                     = var.dcr_name
-  dcr_workspace_resource_id    = data.azurerm_log_analytics_workspace.management.id
   dcr_resource_group_name      = var.dcr_resource_group_name
 }
 
