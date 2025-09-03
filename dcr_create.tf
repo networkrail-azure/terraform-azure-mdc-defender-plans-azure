@@ -1,10 +1,6 @@
-locals {
-  should_create_dcr = var.enable_telemetry
-  
-  # Auto-generate names using region
-  dcr_name                = "dcr-mdc-${var.location}"
-  dcr_resource_group_name = "rg-mdc-dcr-${var.location}"
-}
+# Data Collection Rule (DCR) creation and configuration
+# DCR configuration is defined in locals.tf
+
 data "azurerm_log_analytics_workspace" "management" {
   name                = "law-management-uksouth"
   resource_group_name = "rg-management-uksouth"

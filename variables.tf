@@ -64,11 +64,6 @@ variable "mdc_plans_list" {
   }
 }
 
-locals {
-  disallowed_plans = toset(["Api"]) # deprecated by Microsoft
-  enabled_plans    = setsubtract(local.plans_without_databases, local.disallowed_plans)
-}
-
 variable "storage_accounts_malware_scan_cap_gb_per_month" {
   type        = string
   default     = "5000"

@@ -1,21 +1,5 @@
-locals {
-  va_type = jsonencode({
-    "vaType" = {
-      "value" = "mdeTvm"
-    }
-  })
-  virtual_machine_policies = {
-    mdc-va-autoprovisioning-vm = {
-      definition_display_name = "Configure machines to receive a vulnerability assessment provider"
-    }
-  }
-  virtual_machine_roles = {
-    virtual-machines-va-role-1 = {
-      name   = "Security Admin"
-      policy = "mdc-va-autoprovisioning-vm"
-    }
-  }
-}
+# Virtual machine-specific extensions and policy assignments  
+# Virtual machine policies and configuration are defined in locals.tf
 
 # Enabling vm extensions - Vulnerability assessment
 data "azurerm_policy_definition" "vm_policies" {
