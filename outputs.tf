@@ -3,7 +3,7 @@ output "plans_details" {
   value = {
     for name, pricing in local.asc_plans : name => {
       id      = pricing.id
-      subplan = jsondecode(pricing.output).properties.subPlan
+      subplan = try(pricing.output.properties.subPlan, null)
     }
   }
 }

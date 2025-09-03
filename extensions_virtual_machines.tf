@@ -44,11 +44,17 @@ resource "azurerm_subscription_policy_assignment" "vm" {
 }
 
 # Enabling vm extensions - Endpoint protection
-resource "azurerm_security_center_setting" "setting_mcas" {
+resource "azapi_update_resource" "setting_mcas" {
   count = contains(var.mdc_plans_list, "VirtualMachines") && var.enableTvmCheck == "DeployIfNotExists" ? 1 : 0
 
-  enabled      = true
-  setting_name = "WDATP"
+  type        = "Microsoft.Security/settings@2022-05-01"
+  resource_id = "/subscriptions/${var.subscription_id}/providers/Microsoft.Security/settings/WDATP"
+
+  body = {
+    properties = {
+      enabled = true
+    }
+  }
 
   depends_on = [
     azapi_update_resource.asc_plans["VirtualMachines"]
