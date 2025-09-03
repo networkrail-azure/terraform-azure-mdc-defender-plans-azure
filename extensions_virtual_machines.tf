@@ -39,7 +39,7 @@ resource "azurerm_subscription_policy_assignment" "vm" {
   }
 
   depends_on = [
-    azapi_resource.asc_plans["VirtualMachines"]
+    azapi_update_resource.asc_plans["VirtualMachines"]
   ]
 }
 
@@ -51,7 +51,7 @@ resource "azurerm_security_center_setting" "setting_mcas" {
   setting_name = "WDATP"
 
   depends_on = [
-    azapi_resource.asc_plans["VirtualMachines"]
+    azapi_update_resource.asc_plans["VirtualMachines"]
   ]
 }
 

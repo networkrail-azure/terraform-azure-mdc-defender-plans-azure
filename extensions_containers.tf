@@ -66,7 +66,7 @@ resource "azurerm_subscription_policy_assignment" "container" {
   identity { type = "SystemAssigned" }
 
   depends_on = [
-    azapi_resource.asc_plans["Containers"]
+    azapi_update_resource.asc_plans["Containers"]
   ]
 }
 

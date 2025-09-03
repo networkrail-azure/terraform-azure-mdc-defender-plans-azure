@@ -68,12 +68,11 @@ locals {
   }
 }
 
-resource "azapi_resource" "asc_plans" {
+resource "azapi_update_resource" "asc_plans" {
   for_each = local.enabled_plans_map
 
-  type      = "Microsoft.Security/pricings@2024-01-01"
-  name      = each.value
-  parent_id = "/subscriptions/${var.subscription_id}"
+  type        = "Microsoft.Security/pricings@2024-01-01"
+  resource_id = "/subscriptions/${var.subscription_id}/providers/Microsoft.Security/pricings/${each.value}"
 
   body = {
     properties = {
@@ -82,16 +81,9 @@ resource "azapi_resource" "asc_plans" {
       extensions  = local.plan_extensions[each.key]
     }
   }
-
-  # Handle lifecycle to allow for existing resources
-  lifecycle {
-    ignore_changes = [
-      body
-    ]
-  }
 }
 
 # Merge whichever resource map exists into a single map for module-wide referencing
 locals {
-  asc_plans = { for k, v in azapi_resource.asc_plans : k => v }
+  asc_plans = { for k, v in azapi_update_resource.asc_plans : k => v }
 }
