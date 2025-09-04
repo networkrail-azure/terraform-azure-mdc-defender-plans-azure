@@ -1,4 +1,5 @@
 variable "enable_telemetry" {
+  type    = bool
   default = false
 }
 
@@ -16,7 +17,6 @@ variable "mdc_plans_list" {
     "CosmosDbs",
     "StorageAccounts",
     "VirtualMachines",
-    "Api",
   ]
   description = "(Optional) Set of all MDC plans"
 }
@@ -24,10 +24,119 @@ variable "mdc_plans_list" {
 variable "subplans" {
   type = map(string)
   default = {
-    "VirtualMachines" : "P2"
-    "Api" : "P1"
-    "Arm" : "PerSubscription"
-    "KeyVaults" : "PerKeyVault"
+    VirtualMachines = "P2"
+    Arm             = "PerSubscription"
+    KeyVaults       = "PerKeyVault"
   }
-  description = "(Optional) A map of resource type pricing subplan, the key is resource type. This variable takes precedence over `var.default_subplan`. Contact your MSFT representative for possible values"
+  description = "(Optional) A map of resource type pricing subplan, the key is resource type. This variable takes precedence over `var.default_subplan`."
+}
+
+variable "create_policy_assignments" {
+  type    = bool
+  default = true
+}
+
+
+
+# Export / integration options used in example
+variable "ascExportResourceGroupLocation" {
+  type    = string
+  default = "westeurope"
+}
+
+variable "ascExportResourceGroupName" {
+  type    = string
+  default = "rg-mdc-export"
+}
+
+variable "createResourceGroup" {
+  type    = bool
+  default = true
+}
+
+# Notifications / contacts
+variable "emailSecurityContact" {
+  type    = string
+  default = ""
+}
+
+variable "minimalSeverity" {
+  type    = string
+  default = "High"
+}
+
+# Per-plan toggles used by the module (strings expected, e.g. "DeployIfNotExists" or "Disabled")
+variable "enableAscForServers" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForServersVulnerabilityAssessments" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "vulnerabilityAssessmentProvider" {
+  type    = string
+  default = "mdeTvm"
+}
+
+variable "enableTvmCheck" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForAppServices" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForSql" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForOssDb" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForCosmosDbs" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForStorage" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForContainers" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForArm" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForCspm" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "enableAscForSqlOnVm" {
+  type    = string
+  default = "Disabled"
+}
+
+variable "enableAscForKeyVault" {
+  type    = string
+  default = "DeployIfNotExists"
+}
+
+variable "subscription_id" {
+  type        = string
+  description = "Subscription ID to target for this example."
 }

@@ -1,196 +1,56 @@
 # terraform-azure-mdc-defender-plans-azure
 
--> **NOTE:** When running the module, your subscription should not already be onboarded to MDC. If you have already completed the onboarding process, please refer to the [Onboarded Azure Subscription](#onboarded-azure-subscription) section.
+Terraform module to enable Microsoft Defender for Cloud (MDC) plans across Azure subscriptions.
 
-~> **NOTE:** Deletion of the resource will reset the pricing tier to `Free`
+## Quick Start
 
-## Notice on breaking changes
-
-Please be aware that major version(e.g., from 1.0.0 to 2.0.0) update contains breaking changes that may impact your infrastructure. It is crucial to review these changes with caution before proceeding with the upgrade.
-
-In most cases, you will need to adjust your Terraform code to accommodate the changes introduced in the new major version. We strongly recommend reviewing the changelog and migration guide to understand the modifications and ensure a smooth transition.
-
-To help you in this process, we have provided detailed documentation on the breaking changes, new features, and any deprecated functionalities. Please take the time to read through these resources to avoid any potential issues or disruptions to your infrastructure.
-
-* [Notice on Upgrade to v2.x](./NoticeOnUpgradeTov2.0.md)
-
-Remember, upgrading to a major version with breaking changes should be done carefully and thoroughly tested in your environment. If you have any questions or concerns, please don't hesitate to reach out to our support team for assistance.
-
-
-## Onboarding to Microsoft Defender for Cloud (MDC) plans in Azure
-
-This Terraform module activate Microsoft Defender for Cloud (MDC) plans.
-
-The module supports the following onboarding types:
-
-1. <u>Single Subscription</u>: Onboard MDC plans for a single subscription.
-2. <u>Chosen Subscriptions</u>: Onboard MDC plans for a selected list of subscriptions.
-3. <u>All Subscriptions</u>: Onboard MDC plans for all subscriptions where your account holds owner permissions.
-4. <u>Management Group</u>: Onboard MDC plans for all subscriptions within a designated management group.
-
-### Terraform and terraform-provider-azurerm version restrictions
-
-Terraform core's version is v1.x and terraform-provider-azurerm's version is v3.x.
+1. Navigate to the appropriate example folder:
+   - `examples/single_subscription` - Enable for current subscription
 
 ## Usage
 
-### Enable plans
+### Enable Plans
+Set `mdc_plans_list` variable with desired plans (e.g., `["VirtualMachines", "Containers"]`) and run `terraform apply`.
 
-To enable plans using this module, follow these steps based on the subscription type:
+### Existing Subscriptions
+If your subscription is already onboarded to MDC:
+- **Import resources**: Use `terraform import` to manage existing resources
+- **Manual cleanup**: Disable plans via Azure portal before applying
+- **Fresh start**: Destroy existing Terraform state and begin new
 
-#### Single Subscription
+## Key Variables
 
-1. Navigate to `examples\single_subscription` folder.
-2. Execute the `terraform apply` command.
-3. Your onboarding will be applied exclusively to the subscription you are currently connected to.
+- `mdc_plans_list` - Plans to enable (e.g., `["VirtualMachines", "Containers"]`)
+- `subscription_id` - Target subscription (defaults to current context)
+- `create_policy_assignments` - Create policy/RBAC artifacts (default: `true`)
+- `dcr_association_scope_id` - Use existing Data Collection Rules
 
-#### Chosen Subscriptions / All Subscriptions / Management Group
+## Telemetry
 
-1. Enter the relevant folder under `examples` based on your scenario.
-2. Execute the `terraform apply` command.
-3. After the execution, a new directory named `output` will be generated within the example folder.
-4. Access the newly created `output` folder.
-5. Modify the `main.tf` file within this folder to align with your specific requirements.
-6. Execute the `terraform apply` command again to apply your modifications.
+Uses `modtm` provider for minimal telemetry (module UUID, operation type, custom tags only). 
 
-### Disable plans
-
-* To disable all plans execute `terraform destroy` command.
-* To disable a specific plan, remove the plan name from mdc_plans_list var and execute `terraform apply` command.
-
-### Onboarded Azure Subscription
-We recommend managing the entire onboarding process with our module. If you've already onboarded your Azure Subscription to Microsoft Defender for Cloud plans, you have several options:
-
-#### Azure Defender Plans UI Portal
-* **Manual Cleanup**: Manually toggle off the status of all MDC plans.
-
-#### Terraform CLI
-* **Start Fresh**: You can choose to destroy your current Terraform environment and begin anew.
-* **Import Existing Resources**: Utilize [Terraform import](https://developer.hashicorp.com/terraform/cli/import) to seamlessly integrate existing resources into Terraform management.
-* **Manage Multiple Terraform States**: Maintain your current state and create a new one for this module, allowing for efficient resource management.
-
-## Telemetry Collection
-
-This module uses [terraform-provider-modtm](https://registry.terraform.io/providers/Azure/modtm/latest) to collect telemetry data. This provider is designed to assist with tracking the usage of Terraform modules. It creates a custom `modtm_telemetry` resource that gathers and sends telemetry data to a specified endpoint. The aim is to provide visibility into the lifecycle of your Terraform modules - whether they are being created, updated, or deleted. This data can be invaluable in understanding the usage patterns of your modules, identifying popular modules, and recognizing those that are no longer in use.
-
-The ModTM provider is designed with respect for data privacy and control. The only data collected and transmitted are the tags you define in module's `modtm_telemetry` resource, an uuid which represents a module instance's identifier, and the operation the module's caller is executing (Create/Update/Delete/Read). No other data from your Terraform modules or your environment is collected or transmitted.
-
-One of the primary design principles of the ModTM provider is its non-blocking nature. The provider is designed to work in a way that any network disconnectedness or errors during the telemetry data sending process will not cause a Terraform error or interrupt your Terraform operations. This makes the ModTM provider safe to use even in network-restricted or air-gaped environments.
-
-If the telemetry data cannot be sent due to network issues, the failure will be logged, but it will not affect the Terraform operation in progress(it might delay your operations for no more than 5 seconds). This ensures that your Terraform operations always run smoothly and without interruptions, regardless of the network conditions.
-
-You can turn off the telemetry collection by declaring the following `provider` block in your root module:
-
+Disable telemetry:
 ```hcl
 provider "modtm" {
   enabled = false
 }
 ```
 
-## Contributing
-### Configurations
+## Reference
 
-- [Configure Terraform for Azure](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/terraform-install-configure)
+- **Examples**: `examples/`
+- **Variables**: `variables.tf`  
+- **Core logic**: `main.tf`
+- **Changelog**: `CHANGELOG.md`
 
-We assumed that you have setup service principal's credentials in your environment variables like below:
 
-```shell
-export ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
-export ARM_TENANT_ID="<azure_subscription_tenant_id>"
-export ARM_CLIENT_ID="<service_principal_appid>"
-export ARM_CLIENT_SECRET="<service_principal_password>"
-```
-
-On Windows Powershell:
-
-```shell
-$env:ARM_SUBSCRIPTION_ID="<azure_subscription_id>"
-$env:ARM_TENANT_ID="<azure_subscription_tenant_id>"
-$env:ARM_CLIENT_ID="<service_principal_appid>"
-$env:ARM_CLIENT_SECRET="<service_principal_password>"
-```
-
-### Pre-Commit & Pr-Check &  E2E Test
-
-We provide a docker image to run the pre-commit checks and tests for you: `mcr.microsoft.com/azterraform:latest`
-
-To run the pre-commit task, we can run the following command:
-
-```shell
-$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
-```
-
-On Windows Powershell:
-
-```shell
-$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pre-commit
-```
-
-In pre-commit task, we will:
-
-1. Run `terraform fmt -recursive` command for your Terraform code.
-2. Run `terrafmt fmt -f` command for markdown files and go code files to ensure that the Terraform code embedded in these files are well formatted.
-3. Run `go mod tidy` and `go mod vendor` for test folder to ensure that all the dependencies have been synced.
-4. Run `gofmt` for all go code files.
-5. Run `gofumpt` for all go code files.
-6. Run `terraform-docs` on `README.md` file, then run `markdown-table-formatter` to format markdown tables in `README.md`.
-
-Then we can run the pr-check task to check whether our code meets our pipeline's requirement (We strongly recommend you run the following command before you commit):
-
-```shell
-$ docker run --rm -v $(pwd):/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
-```
-
-On Windows Powershell:
-
-```shell
-$ docker run --rm -v ${pwd}:/src -w /src mcr.microsoft.com/azterraform:latest make pr-check
-```
-
-To run the e2e-test, we can run the following command:
-
-```text
-docker run --rm -v $(pwd):/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
-```
-
-On Windows Powershell:
-
-```text
-docker run --rm -v ${pwd}:/src -w /src -e ARM_SUBSCRIPTION_ID -e ARM_TENANT_ID -e ARM_CLIENT_ID -e ARM_CLIENT_SECRET mcr.microsoft.com/azterraform:latest make e2e-test
-```
-#### Notice to contributor
-
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.microsoft.com.
-
-When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-## Authors
-
-Originally created by [Eli Betito](https://github.com/elibetito-microsoft) and [Ori Ben Arzty](https://github.com/oribenartzyM)
-
-## License
-
-[MIT](LICENSE)
-
-## Module Spec
-
-The following sections are generated by [terraform-docs](https://github.com/terraform-docs/terraform-docs) and [markdown-table-formatter](https://github.com/nvuillam/markdown-table-formatter), please **DO NOT MODIFY THEM MANUALLY!**
-
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.47, < 4.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 4.0.0 |
+| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 2.0 |
 | <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) | ~> 0.3 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 
@@ -198,52 +58,45 @@ The following sections are generated by [terraform-docs](https://github.com/terr
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 3.47, < 4.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | >= 4.0.0 |
+| <a name="provider_azapi"></a> [azapi](#provider\_azapi) | ~> 2.0 |
 | <a name="provider_modtm"></a> [modtm](#provider\_modtm) | ~> 0.3 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
-
-## Modules
-
-No modules.
-
-## Resources
-
-| Name | Type |
-|------|------|
-| [azurerm_role_assignment.va_auto_provisioning_containers_role](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.va_auto_provisioning_la_role](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.va_auto_provisioning_vm_role](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_security_center_setting.setting_mcas](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_setting) | resource |
-| [azurerm_security_center_subscription_pricing.asc_plans](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/security_center_subscription_pricing) | resource |
-| [azurerm_subscription_policy_assignment.container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.sql](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.vm](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [modtm_telemetry.this](https://registry.terraform.io/providers/Azure/modtm/latest/docs/resources/telemetry) | resource |
-| [random_uuid.telemetry](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) | resource |
-| [azurerm_client_config.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
-| [azurerm_policy_definition.container_policies](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_definition) | data source |
-| [azurerm_policy_definition.la_policies](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_definition) | data source |
-| [azurerm_policy_definition.vm_policies](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_definition) | data source |
-| [azurerm_role_definition.container_roles](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) | data source |
-| [azurerm_role_definition.la_roles](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) | data source |
-| [azurerm_role_definition.vm_roles](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/role_definition) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
-| [modtm_module_source.telemetry](https://registry.terraform.io/providers/Azure/modtm/latest/docs/data-sources/module_source) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_ascExportResourceGroupLocation"></a> [ascExportResourceGroupLocation](#input\_ascExportResourceGroupLocation) | Location to create the export resource group | `string` | `"uksouth"` | no |
+| <a name="input_ascExportResourceGroupName"></a> [ascExportResourceGroupName](#input\_ascExportResourceGroupName) | Name for the export resource group | `string` | `"rg-mdc-export"` | no |
+| <a name="input_create_policy_assignments"></a> [create\_policy\_assignments](#input\_create\_policy\_assignments) | Toggle to create policy assignment resources and their role assignments. | `bool` | `true` | no |
+| <a name="input_createResourceGroup"></a> [createResourceGroup](#input\_createResourceGroup) | If true, the module will create the export resource group specified by `ascExportResourceGroupName` | `bool` | `true` | no |
+| <a name="input_dcr_association_scope_id"></a> [dcr\_association\_scope\_id](#input\_dcr\_association\_scope\_id) | Resource ID to associate the DCR to (subscription, resource group, VM/VMSS, etc.). | `string` | `null` | no |
 | <a name="input_default_subplan"></a> [default\_subplan](#input\_default\_subplan) | (Optional) Resource type pricing default subplan. Contact your MSFT representative for possible values | `string` | `null` | no |
 | <a name="input_default_tier"></a> [default\_tier](#input\_default\_tier) | (Optional) The pricing tier to use. Possible values are `Free` and `Standard` | `string` | `"Standard"` | no |
+| <a name="input_emailSecurityContact"></a> [emailSecurityContact](#input\_emailSecurityContact) | Email address for a security contact to use for notifications | `string` | `""` | no |
+| <a name="input_enableAscForAppServices"></a> [enableAscForAppServices](#input\_enableAscForAppServices) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForArm"></a> [enableAscForArm](#input\_enableAscForArm) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForContainers"></a> [enableAscForContainers](#input\_enableAscForContainers) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForCosmosDbs"></a> [enableAscForCosmosDbs](#input\_enableAscForCosmosDbs) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForCspm"></a> [enableAscForCspm](#input\_enableAscForCspm) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForKeyVault"></a> [enableAscForKeyVault](#input\_enableAscForKeyVault) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForOssDb"></a> [enableAscForOssDb](#input\_enableAscForOssDb) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForServers"></a> [enableAscForServers](#input\_enableAscForServers) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForServersVulnerabilityAssessments"></a> [enableAscForServersVulnerabilityAssessments](#input\_enableAscForServersVulnerabilityAssessments) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForSql"></a> [enableAscForSql](#input\_enableAscForSql) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForSqlOnVm"></a> [enableAscForSqlOnVm](#input\_enableAscForSqlOnVm) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_enableAscForStorage"></a> [enableAscForStorage](#input\_enableAscForStorage) | n/a | `string` | `"DeployIfNotExists"` | no |
 | <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry) | This variable controls whether or not telemetry is enabled for the module.<br>For more information see https://aka.ms/avm/telemetryinfo.<br>If it is set to false, then no telemetry will be collected. | `bool` | `true` | no |
-| <a name="input_location"></a> [location](#input\_location) | (Optional) The location/region where the policy should exist. | `string` | `"West Europe"` | no |
+| <a name="input_enableTvmCheck"></a> [enableTvmCheck](#input\_enableTvmCheck) | n/a | `string` | `"DeployIfNotExists"` | no |
+| <a name="input_location"></a> [location](#input\_location) | (Optional) The location/region where the policy should exist. | `string` | `"uksouth"` | no |
 | <a name="input_mdc_databases_plans"></a> [mdc\_databases\_plans](#input\_mdc\_databases\_plans) | (Optional) Set of all MDC databases plans | `set(string)` | <pre>[<br>  "OpenSourceRelationalDatabases",<br>  "SqlServers",<br>  "SqlServerVirtualMachines",<br>  "CosmosDbs"<br>]</pre> | no |
-| <a name="input_mdc_plans_list"></a> [mdc\_plans\_list](#input\_mdc\_plans\_list) | (Optional) Set of all MDC plans | `set(string)` | <pre>[<br>  "AppServices",<br>  "Arm",<br>  "CloudPosture",<br>  "Containers",<br>  "KeyVaults",<br>  "OpenSourceRelationalDatabases",<br>  "SqlServers",<br>  "SqlServerVirtualMachines",<br>  "CosmosDbs",<br>  "StorageAccounts",<br>  "VirtualMachines",<br>  "Api"<br>]</pre> | no |
+| <a name="input_mdc_plans_list"></a> [mdc\_plans\_list](#input\_mdc\_plans\_list) | (Optional) Set of all MDC plans | `set(string)` | <pre>[<br>  "AppServices",<br>  "Arm",<br>  "CloudPosture",<br>  "Containers",<br>  "KeyVaults",<br>  "OpenSourceRelationalDatabases",<br>  "SqlServers",<br>  "SqlServerVirtualMachines",<br>  "CosmosDbs",<br>  "StorageAccounts",<br>  "VirtualMachines"<br>]</pre> | no |
+| <a name="input_minimalSeverity"></a> [minimalSeverity](#input\_minimalSeverity) | Minimal severity level for notifications (Low\|Medium\|High\|Critical) | `string` | `"High"` | no |
 | <a name="input_storage_accounts_malware_scan_cap_gb_per_month"></a> [storage\_accounts\_malware\_scan\_cap\_gb\_per\_month](#input\_storage\_accounts\_malware\_scan\_cap\_gb\_per\_month) | (Optional) Sets the maximum GB limit for malware scanning on uploaded files per storage account per month | `string` | `"5000"` | no |
 | <a name="input_subplans"></a> [subplans](#input\_subplans) | (Optional) A map of resource type pricing subplan, the key is resource type. This variable takes precedence over `var.default_subplan`. Contact your MSFT representative for possible values | `map(string)` | `{}` | no |
-| <a name="input_tracing_tags_enabled"></a> [tracing\_tags\_enabled](#input\_tracing\_tags\_enabled) | Whether enable tracing tags that generated by BridgeCrew Yor. | `bool` | `false` | no |
-| <a name="input_tracing_tags_prefix"></a> [tracing\_tags\_prefix](#input\_tracing\_tags\_prefix) | Default prefix for generated tracing tags | `string` | `"avm_"` | no |
+| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | (Optional) The subscription ID to target. If null, uses the current subscription context. | `string` | `null` | no |
+| <a name="input_vulnerabilityAssessmentProvider"></a> [vulnerabilityAssessmentProvider](#input\_vulnerabilityAssessmentProvider) | n/a | `string` | `"mdeTvm"` | no |
 
 ## Outputs
 
@@ -251,4 +104,3 @@ No modules.
 |------|-------------|
 | <a name="output_plans_details"></a> [plans\_details](#output\_plans\_details) | All plans details |
 | <a name="output_subscription_pricing_id"></a> [subscription\_pricing\_id](#output\_subscription\_pricing\_id) | The subscription pricing ID |
-<!-- END_TF_DOCS -->
