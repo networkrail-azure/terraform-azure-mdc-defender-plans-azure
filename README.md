@@ -12,10 +12,6 @@ Terraform module to enable Microsoft Defender for Cloud (MDC) plans across Azure
 ### Enable Plans
 Set `mdc_plans_list` variable with desired plans (e.g., `["VirtualMachines", "Containers"]`) and run `terraform apply`.
 
-### Disable Plans
-- **All plans**: `terraform destroy`
-- **Specific plan**: Remove from `mdc_plans_list` and run `terraform apply`
-
 ### Existing Subscriptions
 If your subscription is already onboarded to MDC:
 - **Import resources**: Use `terraform import` to manage existing resources
