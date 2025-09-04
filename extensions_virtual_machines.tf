@@ -1,6 +1,3 @@
-# Virtual machine-specific extensions and policy assignments  
-# Virtual machine policies and configuration are defined in locals.tf
-
 # Enabling vm extensions - Vulnerability assessment
 data "azurerm_policy_definition" "vm_policies" {
   for_each = contains(var.mdc_plans_list, "VirtualMachines") && var.create_policy_assignments && var.enableAscForServersVulnerabilityAssessments == "DeployIfNotExists" ? local.virtual_machine_policies : {}

@@ -102,7 +102,7 @@ variable "subscription_id" {
 }
 variable "ascExportResourceGroupLocation" {
   type        = string
-  default     = "westeurope"
+  default     = "uksouth"
   description = "Location to create the export resource group"
 }
 
@@ -167,7 +167,7 @@ variable "enableAscForOssDb" {
 
 variable "enableAscForCosmosDbs" {
   type    = string
-  default = "Disabled"
+  default = "DeployIfNotExists"
 }
 
 variable "enableAscForStorage" {
@@ -177,7 +177,7 @@ variable "enableAscForStorage" {
 
 variable "enableAscForContainers" {
   type    = string
-  default = "Disabled"
+  default = "DeployIfNotExists"
 }
 
 variable "enableAscForArm" {
@@ -192,7 +192,7 @@ variable "enableAscForCspm" {
 
 variable "enableAscForSqlOnVm" {
   type    = string
-  default = "Disabled"
+  default = "DeployIfNotExists"
 }
 
 variable "enableAscForKeyVault" {

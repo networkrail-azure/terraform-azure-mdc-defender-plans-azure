@@ -103,7 +103,7 @@ variable "enableAscForOssDb" {
 
 variable "enableAscForCosmosDbs" {
   type    = string
-  default = "Disabled"
+  default = "DeployIfNotExists"
 }
 
 variable "enableAscForStorage" {
@@ -113,7 +113,7 @@ variable "enableAscForStorage" {
 
 variable "enableAscForContainers" {
   type    = string
-  default = "Disabled"
+  default = "DeployIfNotExists"
 }
 
 variable "enableAscForArm" {

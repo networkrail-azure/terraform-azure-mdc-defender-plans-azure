@@ -1,13 +1,3 @@
-# =============================================================================
-# LOCALS CONSOLIDATION
-# =============================================================================
-# This file contains all local values used throughout the module for better
-# organization and maintainability.
-
-# -----------------------------------------------------------------------------
-# CORE PLAN CONFIGURATION
-# -----------------------------------------------------------------------------
-
 locals {
   # Deprecated plans that should be excluded
   disallowed_plans = toset(["Api"]) # deprecated by Microsoft
@@ -21,10 +11,6 @@ locals {
   # Convert to deterministic map for for_each loops
   enabled_plans_map = { for p in sort(tolist(local.enabled_plans)) : p => p }
 }
-
-# -----------------------------------------------------------------------------
-# EXTENSION CONFIGURATION
-# -----------------------------------------------------------------------------
 
 locals {
   # Define which extensions apply to which plans
@@ -86,18 +72,10 @@ locals {
   }
 }
 
-# -----------------------------------------------------------------------------
-# RESOURCE REFERENCES
-# -----------------------------------------------------------------------------
-
 locals {
   # Unified reference to all created pricing plans
   asc_plans = { for k, v in azapi_update_resource.asc_plans : k => v }
 }
-
-# -----------------------------------------------------------------------------
-# CONTAINER POLICIES
-# -----------------------------------------------------------------------------
 
 locals {
   # Container policies/roles map drives consistent keys across data lookups, policy assignments, and role bindings
@@ -149,10 +127,6 @@ locals {
   }
 }
 
-# -----------------------------------------------------------------------------
-# VIRTUAL MACHINE CONFIGURATION
-# -----------------------------------------------------------------------------
-
 locals {
   # Vulnerability assessment configuration
   va_type = jsonencode({
@@ -177,18 +151,10 @@ locals {
   }
 }
 
-# -----------------------------------------------------------------------------
-# SQL SERVER VIRTUAL MACHINES
-# -----------------------------------------------------------------------------
-
 locals {
   # Determine if SQL Server VM plans should be enabled
   sql_server_virtual_machines_enabled = contains(local.plans_without_databases, "SqlServerVirtualMachines") && !contains(var.mdc_plans_list, "VirtualMachines")
 }
-
-# -----------------------------------------------------------------------------
-# DATA COLLECTION RULE (DCR) CONFIGURATION
-# -----------------------------------------------------------------------------
 
 locals {
   # DCR creation control

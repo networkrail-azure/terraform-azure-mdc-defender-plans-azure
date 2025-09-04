@@ -1,6 +1,3 @@
-# Container-specific extensions and policy assignments
-# Container policies and roles are defined in locals.tf
-
 # Containers policy definitions (created only when enabled)
 data "azurerm_policy_definition" "container_policies" {
   for_each = contains(var.mdc_plans_list, "Containers") && var.create_policy_assignments && var.enableAscForContainers == "DeployIfNotExists" ? local.container_policies : {}
