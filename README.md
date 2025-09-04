@@ -7,12 +7,6 @@ Terraform module to enable Microsoft Defender for Cloud (MDC) plans across Azure
 1. Navigate to the appropriate example folder:
    - `examples/single_subscription` - Enable for current subscription
 
-2. Run Terraform:
-   ```bash
-   terraform init
-   terraform apply
-   ```
-
 ## Usage
 
 ### Enable Plans
